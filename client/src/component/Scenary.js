@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 function Scenary() {
   const [map, setMap] = useState(false);
@@ -6,6 +6,16 @@ function Scenary() {
   const [small, setSmall] = useState([]);
   const [medium, setMedium] = useState([]);
   const [large, setLarge] = useState([]);
+
+  const [msmSmall, setMsmSmall] = useState();
+  const [msmMedium, setMsmMedium] = useState();
+  const [msmLarge, setMsmLarge] = useState();
+
+  const [btn, setBtn] = useState(true);
+  const [turn, setTurn] = useState(false);
+
+  const [ataque, setAtaque] = useState([]);
+  const [posibilidades, setPosibilidades] = useState([]);
 
   const numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
   const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
@@ -17,20 +27,51 @@ function Scenary() {
     large: ["C2", "D2", "E2", "F2"],
   };
 
- 
+  function empezar() {
+    setBtn(true);
+    setMap(false);
+    for (let i = 0; i < small.length; i++) {
+      document.querySelector(`.${small[i]}`).style.background = "";
+    }
+    for (let i = 0; i < medium.length; i++) {
+      document.querySelector(`.${medium[i]}`).style.background = "";
+    }
+    for (let i = 0; i < large.length; i++) {
+      document.querySelector(`.${large[i]}`).style.background = "";
+    }
+    setSmall([]);
+    setMedium([]);
+    setLarge([]);
+  }
+
   // Escucha si están todos los barcos
 
-  useEffect(() => {
-    if (small.length == 1) {
-      console.log("cambio");
-    }
-  });
-
   function jugar() {
-    console.log(small);
-    console.log(medium);
-    console.log(large);
-    console.log("Aparece 2º Panel");
+    // Para ir quitando casillas al atacar a la IA
+    var casillas = [];
+    for (let i = 0; i < letters.length; i++) {
+      for (let j = 0; j < numbers.length; j++) {
+        casillas.push(letters[i] + numbers[j]);
+      }
+    }
+    setPosibilidades(casillas);
+
+    const play = small.length == 2 && medium.length == 3 && large.length == 4;
+    if (play) {
+      setMap(true);
+      setBtn(false);
+      setTurn(true);
+    } else if (!play) {
+      if (small.length < 1) {
+        setMsmSmall("Incompleto barco Small");
+      }
+      if (medium.length < 1) {
+        setMsmMedium("Incompleto barco Medium");
+      }
+      if (large.length < 1) {
+        setMsmLarge("Incompleto barco Large");
+      }
+    }
   }
 
   // Para pintar los barcos
@@ -49,7 +90,6 @@ function Scenary() {
     if (smallPaint) {
       // Preparación de las coordenadas seleccionadas
       const newE = e.split("f");
-      console.log(newE[0]);
 
       // coorLeter[0] la letra
       const coorLeter = newE[0].split(newE[0][1]);
@@ -84,15 +124,12 @@ function Scenary() {
             "rgb(203, 203, 203)";
           small.push(e);
           setSmall(small);
-          // console.log(small);
-          // console.log(yours.small);
         }
       } else {
         document.querySelector(`#${table} .${e}`).style.background =
           "rgb(203, 203, 203)";
         small.push(e);
         setSmall(small);
-        // console.log(yours.small);
       }
     }
 
@@ -100,7 +137,6 @@ function Scenary() {
       document.querySelector(`#${table} .${e}`).style.background = "";
       var filtro = small.filter((item) => item !== e);
       setSmall(filtro);
-      // console.log(yours.small);
     }
 
     //! --------- BARCO MEDIO ---------//
@@ -111,7 +147,6 @@ function Scenary() {
     if (mediumPaint) {
       // Preparación de las coordenadas seleccionadas
       const newEM = e.split("f");
-      // console.log(newEM[0]);
 
       // coorLeter[0] la letra
       const coorLeterM = newEM[0].split(newEM[0][1]);
@@ -146,7 +181,6 @@ function Scenary() {
           medium.push(e);
           medium.sort();
           setMedium(medium);
-          // console.log(yours.medium);
         }
       } else if (medium.length == 2) {
         //! Primera coordenada
@@ -171,7 +205,6 @@ function Scenary() {
         const orientationY = coorNumShipM[1] == seCoorNumShipM[1];
         const direccionX = coorNumShipM[1] < seCoorNumShipM[1];
         const direccionY = coorLeterShipM[0] > seCoorLeterShipM[0];
-        // console.log(direccionY)
 
         if (orientationX && direccionX == true) {
           const filaM =
@@ -185,7 +218,6 @@ function Scenary() {
             medium.push(e);
             medium.sort();
             setMedium(medium);
-            console.log(medium);
           }
         } else if (orientationX && direccionX == false) {
           const filaM =
@@ -199,7 +231,6 @@ function Scenary() {
             medium.push(e);
             medium.sort();
             setMedium(medium);
-            console.log(medium);
           }
         }
 
@@ -212,22 +243,12 @@ function Scenary() {
               coorNumShipM[1] ==
               String.fromCharCode(coorLeterM[0].charCodeAt()) + coorNumM[1];
 
-          console.log(
-            String.fromCharCode(coorLeterShipM[0].charCodeAt() + 1) +
-              coorNumShipM[1]
-          );
-          console.log(
-            String.fromCharCode(coorLeterShipM[0].charCodeAt() - 2) +
-              coorNumShipM[1]
-          );
-
           if (columnM) {
             document.querySelector(`#${table} .${e}`).style.background =
               "rgb(152, 152, 153)";
             medium.push(e);
             medium.sort();
             setMedium(medium);
-            console.log(medium);
           }
         } else if (orientationY && direccionY == false) {
           const columnM =
@@ -238,21 +259,12 @@ function Scenary() {
               coorNumShipM[1] ==
               String.fromCharCode(coorLeterM[0].charCodeAt()) + coorNumM[1];
 
-          console.log(
-            String.fromCharCode(coorLeterShipM[0].charCodeAt() - 1) +
-              coorNumShipM[1]
-          );
-          console.log(
-            String.fromCharCode(coorLeterShipM[0].charCodeAt() + 2) +
-              coorNumShipM[1]
-          );
           if (columnM) {
             document.querySelector(`#${table} .${e}`).style.background =
               "rgb(152, 152, 153)";
             medium.push(e);
             medium.sort();
             setMedium(medium);
-            console.log(medium);
           }
         }
       } else {
@@ -261,7 +273,6 @@ function Scenary() {
         medium.push(e);
         medium.sort();
         setMedium(medium);
-        console.log(medium);
       }
     }
     if (mediumClear) {
@@ -271,13 +282,10 @@ function Scenary() {
             "";
         }
         setMedium([]);
-        console.log(large);
-        console.log("centro");
       } else {
         document.querySelector(`#${table} .${e}`).style.background = "";
         var filtro2 = medium.filter((item) => item !== e);
         setMedium(filtro2);
-        // console.log(yours.medium);
       }
     }
 
@@ -292,18 +300,13 @@ function Scenary() {
           document.querySelector(`#${table} .${large[i]}`).style.background =
             "";
         }
-
         setLarge([]);
-        console.log(large);
-        console.log("centro");
       } else if ((large.length == 4 && e == large[1]) || e == large[2]) {
         for (let i = 0; i < large.length; i++) {
           document.querySelector(`#${table} .${large[i]}`).style.background =
             "";
         }
         setLarge([]);
-        console.log(large);
-        console.log("centro");
       } else {
         document.querySelector(`#${table} .${e}`).style.background = "";
         var filtro2 = large.filter((item) => item !== e);
@@ -314,7 +317,6 @@ function Scenary() {
     if (largePaint) {
       // Preparación de las coordenadas seleccionadas
       const newEL = e.split("f");
-      // console.log(newEM[0]);
 
       // coorLeterL[0] la letra
       const coorLeterL = newEL[0].split(newEL[0][1]);
@@ -349,7 +351,6 @@ function Scenary() {
           large.push(e);
           large.sort();
           setLarge(large);
-          console.log(large);
         }
       } else if (large.length == 2) {
         //! Primera coordenada
@@ -374,7 +375,6 @@ function Scenary() {
         const orientationY = coorNumShipM[1] == seCoorNumShipM[1];
         const direccionX = coorNumShipM[1] < seCoorNumShipM[1];
         const direccionY = coorLeterShipM[0] > seCoorLeterShipM[0];
-        // console.log(direccionY)
 
         if (orientationX && direccionX == true) {
           const filaM =
@@ -388,7 +388,6 @@ function Scenary() {
             large.push(e);
             large.sort();
             setLarge(large);
-            console.log(large);
           }
         } else if (orientationX && direccionX == false) {
           const filaM =
@@ -402,7 +401,6 @@ function Scenary() {
             large.push(e);
             large.sort();
             setLarge(large);
-            console.log(large);
           }
         }
 
@@ -421,7 +419,6 @@ function Scenary() {
             large.push(e);
             large.sort();
             setLarge(large);
-            console.log(large);
           }
         } else if (orientationY && direccionY == false) {
           const columnM =
@@ -438,7 +435,6 @@ function Scenary() {
             large.push(e);
             large.sort();
             setLarge(large);
-            console.log(large);
           }
         }
       } else if (large.length == 3) {
@@ -491,7 +487,6 @@ function Scenary() {
             large.push(e);
             large.sort();
             setLarge(large);
-            console.log(large);
           }
         } else if (orientationX && direccionX == false) {
           const filaL =
@@ -505,7 +500,6 @@ function Scenary() {
             large.push(e);
             large.sort();
             setLarge(large);
-            console.log(large);
           }
         }
 
@@ -524,7 +518,6 @@ function Scenary() {
             large.push(e);
             large.sort();
             setLarge(large);
-            console.log(large);
           }
         } else if (orientationY && direccionY == false) {
           const columnM =
@@ -541,7 +534,6 @@ function Scenary() {
             large.push(e);
             large.sort();
             setLarge(large);
-            console.log(large);
           }
         }
       } else {
@@ -550,7 +542,6 @@ function Scenary() {
         large.push(e);
         large.sort();
         setLarge(large);
-        console.log(large);
       }
     }
   }
@@ -572,7 +563,6 @@ function Scenary() {
     ) {
       var table = document.querySelector(`.${e}`).parentNode.parentNode
         .parentNode.id;
-      console.log(table);
       var color = document.querySelector(`#atack .${e}`).style.background;
 
       if (color == "grey") {
@@ -584,9 +574,78 @@ function Scenary() {
     }
   }
 
+  //! ------ ATACK ------
+
+  function atack(e) {
+    const vacio = document.querySelector(`.${e}`).style.background == "";
+    const verde =
+      document.querySelector(`.${e}`).style.background == "rgb(51, 255, 0)";
+    if (vacio && ataque == "") {
+      document.querySelector(`.${e}`).style.background = "rgb(51, 255, 0)";
+      setAtaque([e]);
+    } else if (verde) {
+      const vacio = (document.querySelector(`.${e}`).style.background = "");
+      setAtaque([]);
+    }
+  }
+
+  //! ------ TURNO Verificar ataque  -------
+
+  function turno() {
+    if (ataque != undefined) {
+      const searchSmall = ships.small.filter((item) => item == ataque[0]);
+      const searchMedium = ships.medium.filter((item) => item == ataque[0]);
+      const searchLarge = ships.large.filter((item) => item == ataque[0]);
+      if (searchSmall != "" || searchMedium != "" || searchLarge != "") {
+        console.log("tocado");
+        document.querySelector(`.${ataque[0]}`).style.background = "yellow";
+        setAtaque([]);
+        setTurn(false);
+        setTimeout(() => {
+          console.log("IA");
+          function randonNumber(max) {
+            var caos = Math.floor(Math.random() * max);
+            return caos + 1;
+          }
+          const atakaIa = posibilidades[randonNumber(100)];
+          console.log(atakaIa);
+          document.querySelector(`.${atakaIa+"f"}`).style.background = "yellow";
+          const result = posibilidades.filter((casilla) => casilla != atakaIa);
+          setPosibilidades(result);
+          setTurn(true);
+      
+        }, 2000);
+      } else if (searchSmall == [] || searchMedium == "" || searchLarge == "") {
+        console.log("agua");
+        document.querySelector(`.${ataque[0]}`).style.background = "blue";
+        setAtaque([]);
+        setTurn(false);
+        setTimeout(() => {
+          console.log("IA");
+          function randonNumber(max) {
+            var caos = Math.floor(Math.random() * max);
+            return caos + 1;
+          }
+          const atakaIa = posibilidades[randonNumber(100)];
+          console.log(atakaIa);
+          document.querySelector(`.${atakaIa+"f"}`).style.background = "blue";
+          const result = posibilidades.filter((casilla) => casilla != atakaIa);
+          setPosibilidades(result);
+          setTurn(true);
+        }, 2000);
+      }
+    } else {
+      console.log("selecciona");
+    }
+  }
+
   // La fila de números de la tabla
   const listNumbers = numbers.map((number) => {
-    return <th key={number.toString()}>{number}</th>;
+    return (
+      <th className={"l" + number.toString()} key={number.toString()}>
+        {number}
+      </th>
+    );
   });
 
   // Crear cada fila vacia con el inicio de cada letra: cada celda tiene su letra+Numero+f (la f diferencia la clase de las celdas de la tabla atack)
@@ -609,6 +668,7 @@ function Scenary() {
     );
   });
 
+  // Preparando la tabla de ataque
   const voids2 = letters.map((letter) => {
     return (
       <tr key={letter}>
@@ -620,7 +680,7 @@ function Scenary() {
               <td
                 key={n}
                 className={letter + n}
-                onClick={(e) => mark(e.target.className)}
+                onClick={(e) => atack(e.target.className)}
               ></td>
             ))
           : null}
@@ -630,10 +690,9 @@ function Scenary() {
 
   return (
     <div>
-     
-
-      <h2>FLOTA</h2>
-      <div>
+      <h1>HUNDIR LA FLOTA</h1>
+      <div id="div-flota">
+        {/* TABLERO DE NUESTROS BARCOS POSICIONADOS */}
         <table id="flota">
           <tbody>
             <tr>
@@ -641,52 +700,13 @@ function Scenary() {
               {listNumbers}
             </tr>
             {voids}
+            <tr>
+              <td colSpan="11">FLOTA</td>
+            </tr>
           </tbody>
         </table>
-        
-        <button onClick={() => jugar()}>JUGAR</button>
-      </div>
-
-      <br></br>
-      <br></br>
-
-      <div id="barcos">
-        <div id="small">
-          <span>Small</span>
-          <div>1</div>
-          <div>2</div>
-          <button value="small" onClick={(e) => setShip("small")}>
-            Select
-          </button>
-        </div>
-        <div id="medium">
-          <span>Medium</span>
-          <div>1</div>
-          <div>2</div>
-          <div>3</div>
-          <button value="medium" onClick={(e) => setShip("medium")}>
-            Select
-          </button>
-        </div>
-
-        <div id="large">
-          <span>Large</span>
-          <div>1</div>
-          <div>2</div>
-          <div>3</div>
-          <div>4</div>
-          <button value="large" onClick={(e) => setShip("large")}>
-            Select
-          </button>
-        </div>
-      </div>
-
-      <br></br>
-      <br></br>
-
-      {map ? (
-        <div>
-          <h2>ATACK</h2>
+        {/* TABLERO DE ATACAR A LA IA */}
+        {map ? (
           <table id="atack">
             <tbody>
               <tr>
@@ -694,12 +714,98 @@ function Scenary() {
                 {listNumbers}
               </tr>
               {voids2}
+              <tr>
+                <td colSpan="11">ATACK</td>
+              </tr>
             </tbody>
           </table>
+        ) : (
+          ""
+        )}
+      </div>
+
+      {/* Los tres botones JUGAR, RESETEAR Y TURNO */}
+
+      <button id="btn-jugar" onClick={() => jugar()}>
+        JUGAR
+      </button>
+      <button id="btn-reset" onClick={() => empezar()}>
+        RESETEAR
+      </button>
+      {turn ? (
+        <button id="btn-reset" onClick={() => turno()}>
+          TURNO
+        </button>
+      ) : (
+        ""
+      )}
+
+      <br></br>
+      <br></br>
+
+      {/* Es las selección de los tres tipos de barcos */}
+      {btn ? (
+        <div>
+          <div>
+            <div id="small">
+              <span>Small</span>
+              <div>1</div>
+              <div>2</div>
+              <button
+                id="btn-small"
+                value="small"
+                onClick={(e) => setShip("small")}
+              >
+                Select
+              </button>
+            </div>
+            <br></br>
+            <div id="medium">
+              <span>Medium</span>
+              <div>1</div>
+              <div>2</div>
+              <div>3</div>
+              <button
+                id="btn-medium"
+                value="medium"
+                onClick={(e) => setShip("medium")}
+              >
+                Select
+              </button>
+            </div>
+            <br></br>
+            <div id="large">
+              <span>Large</span>
+              <div>1</div>
+              <div>2</div>
+              <div>3</div>
+              <div>4</div>{" "}
+              <button
+                id="btn-large"
+                value="large"
+                onClick={(e) => setShip("large")}
+              >
+                Select
+              </button>
+            </div>
+          </div>
         </div>
       ) : (
         ""
       )}
+      {/* Pinta los mensajes de incompletos los barcos */}
+      {btn ? (
+        <div>
+          {msmSmall ? <p>{msmSmall}</p> : ""}
+          {msmMedium ? <p>{msmMedium}</p> : ""}
+          {msmLarge ? <p>{msmLarge}</p> : ""}
+        </div>
+      ) : (
+        ""
+      )}
+
+      <br></br>
+      <br></br>
     </div>
   );
 }

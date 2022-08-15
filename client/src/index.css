@@ -7,6 +7,19 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+h2 {
+  margin-left: auto;
+}
+
+#div-flota {
+  display        : flex;
+  justify-content: space-around;
+}
+
+#btn-jugar {
+  margin-left: 0;
+}
+
 table {
   width          : 40%;
   border-collapse: collapse;
@@ -16,46 +29,44 @@ table {
 th,
 td,
 tr {
-  border: 1px solid black;
+  border: 1px solid rgb(0, 0, 0);
   width : 0.3em;
 }
+.l10{
+  width: 9%;
+}
 
-/*
-th{
-  width: 0.3em;
-}*/
 .letra {
   width: 0.3%;
 }
 
-#small div, #medium div,#large div {
+#small div,
+#medium div,
+#large div {
   width : 100%;
   border: 1px solid black;
 }
 
 #small {
-  display: flex;
-  width : 10%;
-  height: 29px;
-  border: 1px solid black;
+  display         : flex;
+  width           : 20%;
+  height          : 29px;
+  border          : 1px solid black;
   background-color: rgb(203, 203, 203);
 }
-#medium {
-  display: flex;
-  width : 20%;
-  height: 29px;
-  border: 1px solid black;
-  background-color: rgb(152, 152, 153);
 
+#medium {
+  display         : flex;
+  width           : 30%;
+  height          : 29px;
+  border          : 1px solid black;
+  background-color: rgb(152, 152, 153);
 }
 
 #large {
-  display: flex;
-  width : 30%;
-  height: 29px;
-  border: 1px solid black;
+  display         : flex;
+  width           : 50%;
+  height          : 29px;
+  border          : 1px solid black;
   background-color: rgb(65, 65, 65);
-
 }
-
-
