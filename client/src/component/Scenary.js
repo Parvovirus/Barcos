@@ -3,9 +3,20 @@ import React, { useState } from "react";
 function Scenary() {
   const [map, setMap] = useState(false);
   const [ship, setShip] = useState();
+
   const [small, setSmall] = useState([]);
   const [medium, setMedium] = useState([]);
   const [large, setLarge] = useState([]);
+
+  const [smallHundido, setSmallHundido] = useState([]);
+  const [mediumHundido, setMediumHundido] = useState([]);
+  const [largeHundido, setLargeHundido] = useState([]);
+  // Los barcos predeterminados de la IA (luego serán aleatorios)
+  const [shipIA, setShipIA] = useState({
+    small: ["A2", "A3"],
+    medium: ["H4", "I4", "J4"],
+    large: ["C2", "D2", "E2", "F2"],
+  });
 
   const [msmSmall, setMsmSmall] = useState();
   const [msmMedium, setMsmMedium] = useState();
@@ -19,13 +30,11 @@ function Scenary() {
 
   const numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
   const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+  const [count, setCount] = useState(100);
 
-  // Los barcos predeterminados de la IA (luego serán aleatorios)
-  const ships = {
-    small: ["A2", "A3"],
-    medium: ["H4", "I4", "J4"],
-    large: ["C2", "D2", "E2", "F2"],
-  };
+  var smallRoto = [];
+  var mediumRoto = [];
+  var largeRoto = [];
 
   function empezar() {
     setBtn(true);
@@ -42,12 +51,24 @@ function Scenary() {
     setSmall([]);
     setMedium([]);
     setLarge([]);
+    // Resetear tablero, colores y poner todas las casillas
+    var casillas = [];
+    for (let i = 0; i < letters.length; i++) {
+      for (let j = 0; j < numbers.length; j++) {
+        document.querySelector(
+          `.${letters[i] + numbers[j] + "f"}`
+        ).style.background = "";
+        casillas.push(letters[i] + numbers[j]);
+      }
+    }
+    setPosibilidades(casillas);
   }
 
   // Escucha si están todos los barcos
 
   function jugar() {
     // Para ir quitando casillas al atacar a la IA
+
     var casillas = [];
     for (let i = 0; i < letters.length; i++) {
       for (let j = 0; j < numbers.length; j++) {
@@ -592,50 +613,238 @@ function Scenary() {
   //! ------ TURNO Verificar ataque  -------
 
   function turno() {
-    if (ataque != undefined) {
-      const searchSmall = ships.small.filter((item) => item == ataque[0]);
-      const searchMedium = ships.medium.filter((item) => item == ataque[0]);
-      const searchLarge = ships.large.filter((item) => item == ataque[0]);
+    // Condición de victotia, se comparan los estados de los barcos y los hundidos
+
+    if (ataque.length > 0) {
+      console.log(shipIA.medium);
+
+      var searchSmall = shipIA.small.filter((item) => item == ataque[0]);
+      var searchMedium = shipIA.medium.filter((item) => item == ataque[0]);
+      var searchLarge = shipIA.large.filter((item) => item == ataque[0]);
+
+      //! --------- TOCADO ---------
       if (searchSmall != "" || searchMedium != "" || searchLarge != "") {
         console.log("tocado");
         document.querySelector(`.${ataque[0]}`).style.background = "yellow";
+        if (searchSmall != "") {
+          searchSmall = shipIA.small.filter((item) => item != ataque[0]);
+          shipIA.small = searchSmall;
+        }
+        if (searchMedium != "") {
+          searchMedium = shipIA.medium.filter((item) => item != ataque[0]);
+          shipIA.medium = searchMedium;
+        }
+        if (searchLarge != "") {
+          searchLarge = shipIA.large.filter((item) => item != ataque[0]);
+          shipIA.large = searchLarge;
+        }
+
         setAtaque([]);
         setTurn(false);
-        setTimeout(() => {
-          console.log("IA");
-          function randonNumber(max) {
-            var caos = Math.floor(Math.random() * max);
-            return caos + 1;
-          }
-          const atakaIa = posibilidades[randonNumber(100)];
-          console.log(atakaIa);
-          document.querySelector(`.${atakaIa+"f"}`).style.background = "yellow";
-          const result = posibilidades.filter((casilla) => casilla != atakaIa);
-          setPosibilidades(result);
-          setTurn(true);
-      
-        }, 2000);
-      } else if (searchSmall == [] || searchMedium == "" || searchLarge == "") {
+
+        var victoria =
+          shipIA.small.length == 0 &&
+          shipIA.medium.length == 0 &&
+          shipIA.large.length == 0;
+        if (victoria) {
+          alert("GANASTE");
+          empezar();
+          setShipIA({
+            small: ["A2", "A3"],
+            medium: ["H4", "I4", "J4"],
+            large: ["C2", "D2", "E2", "F2"],
+          });
+        } else {
+          //! FASE DE LA MAQUINA //
+
+          setTimeout(() => {
+            console.log("IA");
+            function randonNumber(max) {
+              var caos = Math.floor(Math.random() * max);
+              return caos;
+            }
+
+            // Casilla aleatoria y se van quitando posibilidades
+            var ale = randonNumber(count);
+            const atakaIa = posibilidades[ale];
+            setCount(count - 1);
+
+            // Busco el atakaIA en mis coordenadas de mis barcos
+            const tocadoSmall = small.filter(
+              (casilla) => casilla == atakaIa + "f"
+            );
+            const tocadoMedium = medium.filter(
+              (casilla) => casilla == atakaIa + "f"
+            );
+            const tocadoLarge = large.filter(
+              (casilla) => casilla == atakaIa + "f"
+            );
+            var tocado =
+              tocadoSmall.length > 0 ||
+              tocadoMedium.length > 0 ||
+              tocadoLarge.length > 0;
+
+            if (tocado) {
+              document.querySelector(`.${atakaIa + "f"}`).style.background =
+                "yellow";
+              if (tocadoSmall.length > 0) {
+                const tocadoSmall = small.filter(
+                  (casilla) => casilla != atakaIa + "f"
+                );
+                console.log("entrra");
+                setSmall(tocadoSmall);
+              }
+              if (tocadoMedium.length > 0) {
+                const tocadoMedium = medium.filter(
+                  (casilla) => casilla != atakaIa + "f"
+                );
+                console.log("entrra");
+                setMedium(tocadoMedium);
+              }
+              if (tocadoLarge.length > 0) {
+                const tocadoLarge = medium.filter(
+                  (casilla) => casilla != atakaIa + "f"
+                );
+                console.log("entrra");
+                setLarge(tocadoLarge);
+              }
+            } else {
+              console.log("agua");
+              document.querySelector(`.${atakaIa + "f"}`).style.background =
+                "blue";
+            }
+
+            // Quito de la lista la casilla bombardeada (agua o tocado)
+            const result = posibilidades.filter(
+              (casilla) => casilla != atakaIa
+            );
+            setPosibilidades(result);
+            setTurn(true);
+            //Condición DERROTA
+            var derrota =
+              small.length == 0 && medium.length == 0 && large.length == 0;
+            if (derrota) {
+              alert("HAS PERDIDO");
+              empezar();
+              setShipIA({
+                small: ["A2", "A3"],
+                medium: ["H4", "I4", "J4"],
+                large: ["C2", "D2", "E2", "F2"],
+              });
+            }
+          }, 500);
+        }
+        //! -------- AGUA ---------
+      } else if (searchSmall == "" || searchMedium == "" || searchLarge == "") {
         console.log("agua");
         document.querySelector(`.${ataque[0]}`).style.background = "blue";
         setAtaque([]);
         setTurn(false);
-        setTimeout(() => {
-          console.log("IA");
-          function randonNumber(max) {
-            var caos = Math.floor(Math.random() * max);
-            return caos + 1;
-          }
-          const atakaIa = posibilidades[randonNumber(100)];
-          console.log(atakaIa);
-          document.querySelector(`.${atakaIa+"f"}`).style.background = "blue";
-          const result = posibilidades.filter((casilla) => casilla != atakaIa);
-          setPosibilidades(result);
-          setTurn(true);
-        }, 2000);
+
+        //! Condición de Victoria
+
+        var victoria =
+          shipIA.small.length == 0 &&
+          shipIA.medium.length == 0 &&
+          shipIA.large.length == 0;
+        if (victoria) {
+          alert("GANASTE");
+          empezar();
+          setShipIA({
+            small: ["A2", "A3"],
+            medium: ["H4", "I4", "J4"],
+            large: ["C2", "D2", "E2", "F2"],
+          });
+        } else {
+          //! FASE DE LA MAQUINA //
+
+          setTimeout(() => {
+            console.log("Turno de la IA:");
+            function randonNumber(max) {
+              var caos = Math.floor(Math.random() * max);
+              return caos;
+            }
+
+            console.log(count);
+            var ale = randonNumber(count);
+            console.log(ale);
+            const atakaIa = posibilidades[ale];
+            setCount(count - 1);
+            console.log(atakaIa);
+            console.log(posibilidades);
+
+            // Busco el atakaIA en mis coordenadas de mis barcos
+            const tocadoSmall = small.filter(
+              (casilla) => casilla == atakaIa + "f"
+            );
+            const tocadoMedium = medium.filter(
+              (casilla) => casilla == atakaIa + "f"
+            );
+            const tocadoLarge = large.filter(
+              (casilla) => casilla == atakaIa + "f"
+            );
+
+            var tocado =
+              tocadoSmall.length > 0 ||
+              tocadoMedium.length > 0 ||
+              tocadoLarge.length > 0;
+
+            // console.log(tocado);
+
+            if (tocado) {
+              document.querySelector(`.${atakaIa + "f"}`).style.background =
+                "yellow";
+              if (tocadoSmall.length > 0) {
+                const tocadoSmall = small.filter(
+                  (casilla) => casilla != atakaIa + "f"
+                );
+                console.log("entrra");
+                setSmall(tocadoSmall);
+              }
+              if (tocadoMedium.length > 0) {
+                const tocadoSmall = medium.filter(
+                  (casilla) => casilla != atakaIa + "f"
+                );
+                console.log("entrra");
+                setMedium(tocadoSmall);
+              }
+              if (tocadoLarge.length > 0) {
+                const tocadoLarge = medium.filter(
+                  (casilla) => casilla != atakaIa + "f"
+                );
+                console.log("entrra");
+                setLarge(tocadoLarge);
+              }
+            } else {
+              console.log("agua");
+              document.querySelector(`.${atakaIa + "f"}`).style.background =
+                "blue";
+            }
+
+            // Quito de la lista la casilla bombardeada (agua o tocado)
+            const result = posibilidades.filter(
+              (casilla) => casilla != atakaIa
+            );
+            setPosibilidades(result);
+            setTurn(true);
+
+            //Condición DERROTA
+            var derrota =
+              small.length == 0 && medium.length == 0 && large.length == 0;
+            if (derrota) {
+              alert("HAS PERDIDO");
+              empezar();
+              setShipIA({
+                small: ["A2", "A3"],
+                medium: ["H4", "I4", "J4"],
+                large: ["C2", "D2", "E2", "F2"],
+              });
+            }
+          }, 500);
+        }
       }
     } else {
-      console.log("selecciona");
+      alert("Selecciona una casilla de ataque");
     }
   }
 
